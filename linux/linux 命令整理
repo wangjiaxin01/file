@@ -1,0 +1,57 @@
+
+ssh -p port username@IP 登陆服务器
+
+chgrp - change group，用于修改文件/文件夹的用户组
+
+通过chgrp，将用户组改成root，即：chgrp root JonathanFile.txt
+
+chown - change ownership，使用该命令改变文件/文件夹的owner （功能同chgrp 修改文件/文件夹的所有者）
+
+chown root JonathanFile.txt	
+
+chmod - change mode，使用该命令改变对文件/文件夹的权限(即rwx-)
+
+例：chmod 770 JonathanFile.txt 
+
+1、删除文件
+
+	rm -f(强制删除)/-r(递归处理，将制定目录下的文件和文件夹一并删除)文件名  
+
+
+2、删除文件夹
+	
+	rm -rf 文件夹名
+
+3、创建文件夹
+	
+	mkdir -m(设置目录访问权限 r(Read，读取) w(Write,写入) x(eXecute，执行))/ -p(递归创建目录) dirname
+	注释：r = 4
+		 w = 2
+		 x = 1
+		 - = 0
+
+		 7 = rwx = 可读，可写，可执行
+		 6 = rw- = 可读，可写，不可执行
+		 5 = r-x = 可读，不可写，可执行
+		 4 = r--
+		 3 = -wx
+		 2 = -w-
+		 1 = --x
+		 0 = ---
+
+4、创建文件
+	
+	vim filename (创建并进入文件编辑)
+
+	1》 i 进入编辑，esc 退出 :q 退出 :wq 保存并推出 :!wq 强制退出
+
+	) ：光标移至句尾
+
+　　( ：光标移至句首
+
+　　}：光标移至段落开头
+
+　　{：光标移至段落结尾
+
+
+
