@@ -1,0 +1,139 @@
+1.卸载  先停掉mysql进程   没有安装过的可以直接跳过
+	
+	pkill -9 mysqld
+
+2、查看mysql所有组件
+
+	rpm -qa| grep -i mysql
+
+3、卸载mysql所有组件
+
+	rpm -e --nodeps mysql-*
+
+4、查看mysql所有文件夹
+
+	find / -name mysql 
+
+5、下载mysql的repo源，下载安装最新的版本
+
+	[root@localhost ~]# cd /usr/local/src/
+
+   	[root@localhost src]# wget http://repo.mysql.com/mysql57-community-release-el7-8.noarch.rpm 
+
+   	[root@localhost src]# rpm -ivh mysql57-community-release-el7-8.noarch.rpm 
+
+   	[root@localhost src]#  yum -y install mysql-server 
+
+6、默认配置文件
+
+	默认配置文件路径： 
+	配置文件：/etc/my.cnf 
+	日志文件：/var/log/var/log/mysqld.log 
+	服务启动脚本：/usr/lib/systemd/system/mysqld.service 
+	socket文件：/var/run/mysqld/mysqld.pid
+
+7、配置  my.cnf        vim /etc/my.cnf
+
+	[mysqld]
+	#
+	# Remove leading # and set to the amount of RAM for the most important data
+	# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+	# innodb_buffer_pool_size = 128M
+	#
+	# Remove leading # to turn on a very important data integrity option: logging
+	# changes to the binary log between backups.
+	# log_bin
+	#
+	# Remove leading # to set options mainly useful for reporting servers.
+	# The server defaults are faster for transactions and fast SELECTs.
+	# Adjust sizes as needed, experiment to find the optimal values.
+	# join_buffer_size = 128M
+	# sort_buffer_size = 2M
+	# read_rnd_buffer_size = 2M
+	datadir=/var/lib/mysql
+	socket=/var/lib/mysql/mysql.sock
+	server_id = 1
+	expire_logs_days = 3
+
+	# Disabling symbolic-links is recommended to prevent assorted security risks
+	symbolic-links=0
+
+	log-error=/var/log/mysqld.log
+	pid-file=/var/run/mysqld/mysqld.pid
+
+8、启动mysql服务
+
+	service mysqld restart
+
+9、重置密码
+	
+	[root@localhost ~]# grep "password" /var/log/mysqld.log   
+
+10、可以看到  输入 mysql -u root -p   密码 进入
+
+	ALTER USER 
+	基本使用
+
+	ALTER USER testuser IDENTIFIED BY '123456';
+	修改当前登录用户
+
+	ALTER USER USER() IDENTIFIED BY '123456';
+	使密码过期
+
+	ALTER USER testuser IDENTIFIED BY '123456' PASSWORD EXPIRE;
+	使密码从不过期
+
+	ALTER USER testuser IDENTIFIED BY '123456' PASSWORD EXPIRE NEVER;
+	按默认设置过期时间
+
+	ALTER USER testuser IDENTIFIED BY '123456' PASSWORD EXPIRE DEFAULT;
+	指定过期间隔
+
+	ALTER USER testuser IDENTIFIED BY '123456' PASSWORD EXPIRE INTERVAL 90 DAY;
+	在MySQL文档里，推荐使用ALTER USER修改用户密码
+
+	SET PASSWORD
+	使用SET PASSWORD的password有两种：
+
+	使用默认加密
+
+	SET PASSWORD FOR testuser = '123456'
+	使用PASSWORD()函数加密
+
+	SET PASSWORD FOR testuser = PASSWORD("123456")
+
+11、最后记得刷新权限；
+
+    flush privileges 
+
+    也可以 直接再添加新用户     
+
+    CREATE USER ‘root‘@‘%‘ IDENTIFIED BY ‘您的密码‘;
+
+    grant all on *.* to 'root001'@'%' identified by 'Root@@'  with grant option;
+
+   	增加root用户指定可以任意IP登录，如果想限制只能让指定IP登录请把%替换成IP地址
+
+
+12、修改MySQL的登录设置：
+
+	#vi /etc/my.cnf
+	在[mysqld]的段中加上一句：skip-grant-tables 保存并且退出vi。
+	重新启动mysqld
+
+	重新启动mysqld
+	#/etc/init.d/mysqld restart ( service mysqld restart )
+	use mysql 
+	update user set password=password("12345") where user="root";
+	mysql 5.7的数据库没有了password字段 用的是authentication_string字段
+	mysql> update mysql.user set authentication_string=password('root') where user='root' ;
+	flush privileges;
+	修改密码之后在改回来
+
+
+
+
+
+
+
+

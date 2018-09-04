@@ -1,0 +1,3 @@
+mysql -u root -p 登陆
+
+use mysql 切换到mysql 数据库

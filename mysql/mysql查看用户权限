@@ -1,0 +1,355 @@
+在MySQL中，如何查看一个用户被授予了那些权限呢？ 授予用户的权限可能分全局层级权限、数据库层级权限、表层级别权限、列层级别权限、子程序层级权限。具体分类如下：
+
+ 
+
+ 
+
+全局层级
+
+ 
+
+全局权限适用于一个给定服务器中的所有数据库。这些权限存储在mysql.user表中。GRANT ALL ON *.*和REVOKE ALL ON *.*只授予和撤销全局权限。
+
+ 
+
+数据库层级
+
+ 
+
+数据库权限适用于一个给定数据库中的所有目标。这些权限存储在mysql.db和mysql.host表中。GRANT ALL ON db_name.*和REVOKE ALL ON db_name.*只授予和撤销数据库权限。
+
+    
+
+表层级
+
+ 
+
+表权限适用于一个给定表中的所有列。这些权限存储在mysql.tables_priv表中。GRANT ALL ON db_name.tbl_name和REVOKE ALL ON db_name.tbl_name只授予和撤销表权限。
+
+ 
+
+列层级
+
+ 
+
+列权限适用于一个给定表中的单一列。这些权限存储在mysql.columns_priv表中。当使用REVOKE时，您必须指定与被授权列相同的列。
+
+ 
+
+子程序层级
+
+ 
+
+CREATE ROUTINE, ALTER ROUTINE, EXECUTE和GRANT权限适用于已存储的子程序。这些权限可以被授予为全局层级和数据库层级。而且，除了CREATE ROUTINE外，这些权限可以被授予为子程序层级，并存储在mysql.procs_priv表中。
+
+ 
+
+ 
+
+ 
+
+1：那么我们来创建一个测试账号test，授予全局层级的权限。如下所示： 
+
+ 
+
+mysql> grant select,insert on *.* to test@'%' identified by 'test';
+Query OK, 0 rows affected (0.01 sec)
+ 
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> 
+ 
+
+ 
+
+那么可以用下面两种方式查询授予test的权限。如下所示：
+
+ 
+
+ 
+
+mysql> show grants for test;
++--------------------------------------------------------------------------------------------------------------+
+| Grants for test@%                                                                                            |
++--------------------------------------------------------------------------------------------------------------+
+| GRANT SELECT, INSERT ON *.* TO 'test'@'%' IDENTIFIED BY PASSWORD '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29' |
++--------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+ 
+mysql> select * from mysql.user where user='test'\G;
+*************************** 1. row ***************************
+                  Host: %
+                  User: test
+              Password: *94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29
+           Select_priv: Y
+           Insert_priv: Y
+           Update_priv: N
+           Delete_priv: N
+           Create_priv: N
+             Drop_priv: N
+           Reload_priv: N
+         Shutdown_priv: N
+          Process_priv: N
+             File_priv: N
+            Grant_priv: N
+       References_priv: N
+            Index_priv: N
+            Alter_priv: N
+          Show_db_priv: N
+            Super_priv: N
+ Create_tmp_table_priv: N
+      Lock_tables_priv: N
+          Execute_priv: N
+       Repl_slave_priv: N
+      Repl_client_priv: N
+      Create_view_priv: N
+        Show_view_priv: N
+   Create_routine_priv: N
+    Alter_routine_priv: N
+      Create_user_priv: N
+            Event_priv: N
+          Trigger_priv: N
+Create_tablespace_priv: N
+              ssl_type: 
+            ssl_cipher: 
+           x509_issuer: 
+          x509_subject: 
+         max_questions: 0
+           max_updates: 0
+       max_connections: 0
+  max_user_connections: 0
+                plugin: mysql_native_password
+ authentication_string: 
+      password_expired: N
+1 row in set (0.04 sec)
+ 
+ERROR: 
+No query specified
+ 
+mysql> 
+ 
+
+clip_image001
+
+ 
+
+ 
+
+ 
+
+ 
+
+2：那么我们来创建一个测试账号test，授予数据库层级的权限。如下所示：
+
+ 
+
+mysql> drop user test;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> grant select,insert,update,delete on MyDB.* to test@'%' identified by 'test';
+Query OK, 0 rows affected (0.01 sec)
+ 
+mysql> 
+ 
+mysql> select * from mysql.user where user='test'\G; --可以看到无任何授权。
+mysql> select * from mysql.db where user='test'\G;
+*************************** 1. row ***************************
+                 Host: %
+                   Db: MyDB
+                 User: test
+          Select_priv: Y
+          Insert_priv: Y
+          Update_priv: Y
+          Delete_priv: Y
+          Create_priv: N
+            Drop_priv: N
+           Grant_priv: N
+      References_priv: N
+           Index_priv: N
+           Alter_priv: N
+Create_tmp_table_priv: N
+     Lock_tables_priv: N
+     Create_view_priv: N
+       Show_view_priv: N
+  Create_routine_priv: N
+   Alter_routine_priv: N
+         Execute_priv: N
+           Event_priv: N
+         Trigger_priv: N
+1 row in set (0.04 sec)
+ 
+ERROR: 
+No query specified
+ 
+mysql> 
+mysql> show grants for test;
++-----------------------------------------------------------------------------------------------------+
+| Grants for test@%                                                                                   |
++-----------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'test'@'%' IDENTIFIED BY PASSWORD '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29' |
+| GRANT SELECT, INSERT, UPDATE, DELETE ON `MyDB`.* TO 'test'@'%'                                      |
++-----------------------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+ 
+mysql> 
+ 
+
+ 
+
+ 
+
+3：那么我们来创建一个测试账号test，授予表层级的权限。如下所示：
+
+ 
+
+ 
+
+mysql> drop user test;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> grant all on MyDB.kkk to test@'%' identified by 'test';
+Query OK, 0 rows affected (0.01 sec)
+ 
+mysql> 
+ 
+mysql> show grants for test;
++-----------------------------------------------------------------------------------------------------+
+| Grants for test@%                                                                                   |
++-----------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'test'@'%' IDENTIFIED BY PASSWORD '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29' |
+| GRANT ALL PRIVILEGES ON `MyDB`.`kkk` TO 'test'@'%'                                                  |
++-----------------------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+ 
+mysql> select * from mysql.tables_priv\G;
+*************************** 1. row ***************************
+       Host: %
+         Db: MyDB
+       User: test
+ Table_name: kkk
+    Grantor: root@localhost
+  Timestamp: 0000-00-00 00:00:00
+ Table_priv: Select,Insert,Update,Delete,Create,Drop,References,Index,Alter,Create View,Show view,Trigger
+Column_priv: 
+1 row in set (0.01 sec)
+ 
+ERROR: 
+No query specified
+ 
+mysql> 
+ 
+
+ 
+
+clip_image002
+
+ 
+
+ 
+
+ 
+
+4：那么我们来创建一个测试账号test，授予列层级的权限。如下所示：
+
+ 
+
+mysql> drop user test;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> grant select (id, col1) on MyDB.TEST1 to test@'%' identified by 'test';
+Query OK, 0 rows affected (0.01 sec)
+ 
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> 
+ 
+ 
+mysql> select * from mysql.columns_priv;
++------+------+------+------------+-------------+---------------------+-------------+
+| Host | Db   | User | Table_name | Column_name | Timestamp           | Column_priv |
++------+------+------+------------+-------------+---------------------+-------------+
+| %    | MyDB | test | TEST1      | id          | 0000-00-00 00:00:00 | Select      |
+| %    | MyDB | test | TEST1      | col1        | 0000-00-00 00:00:00 | Select      |
++------+------+------+------------+-------------+---------------------+-------------+
+2 rows in set (0.00 sec)
+ 
+mysql> show grants for test;
++-----------------------------------------------------------------------------------------------------+
+| Grants for test@%                                                                                   |
++-----------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'test'@'%' IDENTIFIED BY PASSWORD '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29' |
+| GRANT SELECT (id, col1) ON `MyDB`.`TEST1` TO 'test'@'%'                                             |
++-----------------------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+ 
+mysql> 
+clip_image003
+
+ 
+
+ 
+
+5：那么我们来创建一个测试账号test，授子程序层级的权限。如下所示：
+
+ 
+
+ 
+
+mysql> DROP PROCEDURE IF EXISTS PRC_TEST;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE PRC_TEST()
+    -> BEGIN
+    ->    SELECT * FROM kkk;
+    -> END //
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> DELIMITER ;
+ 
+mysql> grant execute on procedure MyDB.PRC_TEST to test@'%' identified by 'test';
+Query OK, 0 rows affected (0.01 sec)
+ 
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> 
+ 
+ 
+mysql> show grants for test;
++-----------------------------------------------------------------------------------------------------+
+| Grants for test@%                                                                                   |
++-----------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'test'@'%' IDENTIFIED BY PASSWORD '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29' |
+| GRANT EXECUTE ON PROCEDURE `MyDB`.`prc_test` TO 'test'@'%'                                          |
++-----------------------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+ 
+mysql> select * from mysql.procs_priv where User='test';
++------+------+------+--------------+--------------+----------------+-----------+---------------------+
+| Host | Db   | User | Routine_name | Routine_type | Grantor        | Proc_priv | Timestamp           |
++------+------+------+--------------+--------------+----------------+-----------+---------------------+
+| %    | MyDB | test | PRC_TEST     | PROCEDURE    | root@localhost | Execute   | 0000-00-00 00:00:00 |
++------+------+------+--------------+--------------+----------------+-----------+---------------------+
+1 row in set (0.00 sec)
+ 
+mysql> 
+ 
+
+ 
+
+clip_image004
+
+ 
+
+ 
+
+所以，如果需要查看用户被授予的权限，就需要从这五个层级来查看被授予的权限。从上到下或从小到上，逐一检查各个层级被授予的权限。
