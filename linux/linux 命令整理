@@ -53,5 +53,12 @@ chmod - change mode，使用该命令改变对文件/文件夹的权限(即rwx-)
 
 　　{：光标移至段落结尾
 
+5、修改文件夹或文件名
+	mv file1 file2
+	mv dir1 dir2
 
+
+
+
+	
 
